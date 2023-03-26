@@ -1,0 +1,55 @@
+#!/bin/sh
+
+###########################
+# General config
+#   these are the default settings
+#   the setting are only used, if not defined in the payload itself
+###########################
+
+# USB Gadget Setup
+# ---------------------------
+# Make sure to change USB_PID if you enable different USB functionality in order
+# to force Windows to enumerate the device again
+
+# default gadget information
+USB_VID=0x1d6b        # Vendor ID
+USB_PID=0x0102        # Product ID
+MANUF=hobot
+PRODUCT=xj3
+
+# options
+# UVC
+USE_UVC=false
+UVC_APP=usb_camera
+UVC_EXEC=/usr/bin/usb_camera
+#UVC_ARGS="-s 6 -i 1 -p 1 -c 1 -b 5 -o 0 -O 0 -u 0 -w 1920 -h 1080 -r 5000 -I 64 -P 64 -M 0 -V 3 -U 1"   # 8a10 sensor
+UVC_ARGS="-s 3 -i 1 -p 1 -c 2 -o 0 -O 0 -f 30  -u 0 -w 1920 -h 1080 -r 5000 -I 64 -P 64  -M 0 -V 3 -U 1"   # pattern
+UVC_LOG_TO="> /userdata/uvc.log"
+
+# HID
+USE_HID=false
+HID_REPORT_DESC=/etc/init.d/hid_report_desc.bin
+
+# UAC
+USE_UAC=false
+
+## some base board doesn't has external oscillator, so needs pre exec
+#UVC_PRE_EXEC="camera_test 3 1 1 1"
+
+# ADB
+USE_ADB=true
+
+# Mass Storage
+USE_MSD=false
+MSD_FILE=/userdata/mass_storage.img
+MSD_BLOCK_SIZE=128              # 128M (1M per block)
+MSD_BLOCK_AUTO_MOUNT=true       # auto mount in /media/mass_storage
+
+# Gadget serial
+USE_ACM=false
+
+# overlay some information
+if $USE_ADB; then
+USB_VID=0x18d1        # Vendor ID
+USB_PID=0x4e26        # Product ID
+fi

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# 控制LED的gpio管脚
+gpio_pin=26
+# 闪烁间隔时间
+intervals=1
+
+# 处理程序运行参数
+# 支持设置 "normal", "fast", "slowly" 三种闪烁速度
+if [ $# == 1 ];then
+	case $1 in
+		"normal")
+			intervals=1
+			;;
+		"fast")
+			intervals=0.3
+			;;
+		"slowly")
+			intervals=2
+			;;
+		"*")
+			intervals=1
+			;;
+	esac
+fi
+
+# 运行前先释放一下
+echo ${gpio_pin} > /sys/class/gpio/unexport 2>/dev/null
+
+# 申请 LED 灯的控制管脚，设置功能为GPIO功能
+echo ${gpio_pin} > /sys/class/gpio/export
+if [ $? -ne 0 ]; then
+	echo "Failed to request LED control pin"
+	exit 1
+fi
+echo "Request LED control pin successfully"
+
+
+# 设置控制管脚为输出模式
+echo out > /sys/class/gpio/gpio${gpio_pin}/direction
+if [ $? -ne 0 ]; then
+	echo "Failed to set LED control pin to output mode"
+	exit 1
+fi
+echo "Set LED control pin to output mode successfully"
+
+echo "Let the LED into cycle on and off mode"
+
+# 开始控制LED循环亮灭，1秒钟变化
+while [ true ];
+do
+	echo 1 >  /sys/class/gpio/gpio${gpio_pin}/value
+	sleep ${intervals}
+	echo 0 >  /sys/class/gpio/gpio${gpio_pin}/value
+	sleep ${intervals}
+done

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+###########################
+# General config
+#   these are the default settings
+#   the setting are only used, if not defined in the payload itself
+###########################
+
+# USB Gadget Setup
+# ---------------------------
+# Make sure to change USB_PID if you enable different USB functionality in order
+# to force Windows to enumerate the device again
+
+# default gadget information
+USB_VID=0x1d6b        # Vendor ID
+USB_PID=0x0102        # Product ID
+
+# options
+# Mass Storage Device
+USE_MSD=true
+MSD_FILE=/userdata/mass_storage.img
+MSD_BLOCK_SIZE=128              # 128M (1M per block)
+MSD_BLOCK_AUTO_MOUNT=true       # auto mount in /media/mass_storage
+
+# UAC1 (usb audio class version 1)
+USE_UAC1=true
+
+# multi function option
+IS_MULTI_FUNC=true

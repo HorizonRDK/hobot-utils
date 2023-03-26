@@ -1,0 +1,201 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          adbd
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: adb daemon
+# Description:       android debug bridage daemon
+#                   init script
+#
+### END INIT INFO
+
+# Using the lsb functions to perform the operations.
+. /etc/init.d/functions
+# Process name ( For display )
+NAME=adbd
+# Daemon name, where is the actual executable
+DAEMON=/usr/bin/adbd
+# pid file for the daemon
+PIDFILE=/var/run/adbd.lock
+# usb config file system
+USBCFS=/sys/kernel/config
+
+# If the daemon is not there, then exit.
+test -x $DAEMON || exit 5
+
+is_usb_gadget() {
+    # 0: true
+    # 1: false
+    usb_mode=$(cat /sys/devices/platform/soc/b2000000.usb/b2000000.dwc3/role)
+    if [ -z $usb_mode ]; then
+        return 1
+    fi
+
+    if [ $usb_mode == "device" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
+adbfs_cleanup() {
+    if [ -d $USBCFS/usb_gadget/g1 ]; then
+        echo ">>>>>>>>>>>>> g1 is exist. delete it!"
+        cd $USBCFS/usb_gadget/g1
+        echo '' > UDC
+
+        # remove function, configs & strings
+        rm configs/c.1/ffs.adb
+        rmdir configs/c.1/strings/0x409
+        rmdir configs/c.1
+        rmdir functions/ffs.adb
+        rmdir strings/0x409
+        cd ..
+        rmdir g1
+    else
+        echo "adb configfs already cleanup"
+    fi
+}
+
+adbd_start() {
+    #https://wiki.linaro.org/LMG/Kernel/AndroidConfigFSGadgets#ADB_gadget_configuration
+    #prepare gadgetfs environment 
+
+    modprobe g_ether
+    rmmod g_ether
+    sleep 0.3
+
+    #adb configfs cleanup
+    adbfs_cleanup
+
+    #Mount ConfigFS and create Gadget
+    #mount -t configfs none /sys/kernel/config
+    mkdir -p $USBCFS/usb_gadget/g1
+    cd $USBCFS/usb_gadget/g1
+
+    #Set default Vendor and Product IDs for now
+    echo 0x18d1 > idVendor
+    echo 0x4E26 > idProduct
+    # force usb2.0 for adb temporarily
+    echo 0x0210 > bcdUSB
+    echo "high-speed" > max_speed
+
+    #Create English strings and add random deviceID
+    mkdir strings/0x409
+    serial=$(hrut_duid)         # use hrut_duid as serial number
+
+    if [ -z $serial ]; then
+        serial=$(hrut_socuid)       # use hrut_socuid as serial number
+
+        if [ -n "$serial" ]; then
+            serial=${serial:0-30}       # use socuid last 64 bit data as in dafault
+        fi
+
+        if [ -z $serial ]; then
+            serial=$(cat /sys/devices/platform/soc/a5010000.dwmmc/mmc_host/mmc0/mmc0:0001/serial)
+
+            if [ -z $serial ]; then
+                serial=0123456789ABCD   # Use fixed serial number for other cases(eg. Nand Boot without emmc)
+            fi
+        fi
+    fi
+
+    echo $serial> strings/0x409/serialnumber
+
+    #Update following if you want to
+    echo "hobot" > strings/0x409/manufacturer
+    echo "xj3" > strings/0x409/product
+
+    #Create gadget configuration
+    mkdir configs/c.1
+    mkdir configs/c.1/strings/0x409
+    echo "Conf 1" > configs/c.1/strings/0x409/configuration
+    echo 120 > configs/c.1/MaxPower
+
+    #Create Adb FunctionFS function
+    #And link it to the gadget configuration
+    #stop adbd
+    mkdir -p functions/ffs.adb
+    ln -s $USBCFS/usb_gadget/g1/functions/ffs.adb $USBCFS/usb_gadget/g1/configs/c.1/ffs.adb
+
+    #Start adbd application
+    mkdir -p /dev/usb-ffs/adb
+    mount -o uid=2000,gid=2000 -t functionfs adb /dev/usb-ffs/adb
+    adbd &
+
+    echo "waiting"
+    for i in `seq 1 3`
+    do
+        echo "."
+        sleep 0.3
+    done
+
+    #Enable the Gadget
+    #Replace "b2000000.usb" with your platform UDC driver as found in /sys/class/udc/
+    if  is_usb_gadget; then
+        echo "b2000000.dwc3" > $USBCFS/usb_gadget/g1/UDC
+        echo "device mode adb gadget enabled"
+    fi
+}
+
+adbd_stop() {
+    #adb configfs cleanup
+    adbfs_cleanup
+
+    #stop adb daemon
+    killproc $NAME
+}
+
+case $1 in
+    start)
+    # Checked the PID file exists and check the actual status of process
+    if [ -e $PIDFILE ]; then
+        echo "$DAEMON is already running"
+        exit 3
+    fi
+
+    # config & start adb daemon
+    adbd_start
+    pid=$(pidofproc $DAEMON)
+    echo $pid > $PIDFILE
+    ;;
+    stop)
+    # Stop the daemon.
+    if [ -e $PIDFILE ]; then
+        # cleanup adb configfs/functionfs
+        adbd_stop
+        rm -rf $PIDFILE
+    else
+        echo "$DAEMON is not runnning"
+    fi
+    ;;
+    restart)
+    # Restart the daemon.
+    $0 stop && sleep 2 && $0 start
+    ;;
+    status)
+    # Check the status of the process.
+    if [ -e $PIDFILE ]; then
+        echo "$DAEMON is running"
+    else
+        echo "$DAEMON is not runnning"
+    fi
+    ;;
+    adbd_hotplug)
+    # host switch to device , enable the Gadget
+    sleep 1
+    echo "b2000000.dwc3" > $USBCFS/usb_gadget/g1/UDC
+    echo "adb gadget hotplug"
+    ;;
+    #reload)
+    # Reload the process. Basically sending some signal to a daemon to reload
+    # it configurations.
+    #;;
+    *)
+    # For invalid arguments, print the usage message.
+    echo "Usage: $0 {start|stop|restart|status}"
+    exit 2
+    ;;
+esac

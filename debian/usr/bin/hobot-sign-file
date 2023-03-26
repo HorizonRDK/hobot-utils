@@ -1,0 +1,28 @@
+#!/bin/bash -e
+
+main()
+{
+    if [ $# -ne 1 ]; then
+        echo "Usage: $0 <xxx.ko>"
+        exit 1
+    fi
+
+    which "sign-file" >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Command 'sign-file' not found."
+        exit 2
+    fi
+
+    kernel_headers_dir="/usr/src/linux-headers-4.14.87/certs"
+    sign-file sha512 ${kernel_headers_dir}/hobot_fixed_signing_key.pem ${kernel_headers_dir}/signing_key.x509 $1
+    if [ $? -ne 0 ]; then
+        echo "sign-file failed, Please retry."
+        exit 3
+    fi
+
+    sync
+    echo "Sign Kernel Module File Done."
+    exit 0
+}
+
+main $@

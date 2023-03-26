@@ -1,0 +1,55 @@
+#!/bin/sh
+if [ -z $1 ]
+then
+echo "Please Usage"
+echo "$0 -h|--help|?"
+echo "$0 date"
+exit 1
+fi
+case "$1" in
+-h|help)
+    echo
+    echo "Usage:"
+    echo "       $0 gpio_number gpio_dir [output_value]"
+    echo ""
+    echo "       gpio_number:    0-120"
+    echo "       gpio_dir:       0:input 1:output"
+    echo "       output_value:   0:low   1:high"
+    echo
+exit 0
+;;
+date)
+    echo `date +%Y%m`
+    exit 2
+esac
+
+echo export pin $1
+echo $1 > /sys/class/gpio/export
+
+if [ $2 -eq 1 ]
+then
+    echo setting directions to output
+    echo out > /sys/class/gpio/gpio$1/direction
+
+    if [ $3 -eq 1 ]
+    then
+        echo setting pin high
+        echo 1 > /sys/class/gpio/gpio$1/value
+        echo Unexporting pin $1
+        echo $1 > /sys/class/gpio/unexport
+
+    elif [ $3 -eq 0 ]
+    then
+        echo setting pin low
+        echo 0 > /sys/class/gpio/gpio$1/value
+        echo Unexporting pin $1
+        echo $1 > /sys/class/gpio/unexport
+    fi
+
+elif [ $2 -eq 0 ]
+then
+    echo setting directions to input
+    echo in > /sys/class/gpio/gpio$1/direction
+    echo Unexporting pin $1
+    echo $1 > /sys/class/gpio/unexport
+fi

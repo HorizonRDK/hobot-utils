@@ -1,0 +1,5 @@
+sleep 2
+echo 1 > /proc/bif_dev_sd/channel_sleep
+./app/pre_suspend
+# do_suspend
+echo mem > /sys/power/state

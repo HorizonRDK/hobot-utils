@@ -1,0 +1,43 @@
+# This script print process stat info including priority
+# and some other items that busybox ps command doesn't have
+#
+# currently support
+# (1) pid  %d
+# (2) comm  %s
+# (3) state  %c
+# (4) ppid  %d
+# (18) priority  %ld
+# (19) nice  %ld
+# (23) vsize  %lu
+# (24) rss  %ld
+# (40) rt_priority  %u  (since Linux 2.5.19)
+# (41) policy  %u  (since Linux 2.5.19)
+
+function show_ps
+{
+
+	if [ -d ${1} ];then
+		for dir in `ls ${1}/task/`
+		do
+			if [ -f ${1}/task/$dir/stat ];then
+				cat ${1}/task/$dir/stat | awk '{printf "%8s%8s%8s%8s%8s%8s%8s%16s%8sKB  %-16s\n",$1,$4,$3,$18,$19,$40,$41,$23,$24,$2}'
+			fi
+		done
+	fi
+}
+
+
+printf "%8s%8s%8s%8s%8s%8s%8s%16s%10s  %-16s\n" "pid" "ppid" "state" "prio" "nice" "rt_prio" "policy" "vsize" "rss" "comm"
+
+cd /proc > /dev/null
+for dir in `ls /proc`
+do
+	case $dir in
+		''|*[!0-9]*)
+		;;
+		*)
+			show_ps $dir
+		;;
+	esac
+done
+cd -

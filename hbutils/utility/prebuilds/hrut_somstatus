@@ -1,0 +1,93 @@
+#!/bin/sh
+
+count=1
+index=1
+sleeptime=1
+usage="Usage: $0 [-n count] [-d second]"
+
+while getopts "n:d:h" opt
+do
+    case $opt in
+    n)
+        count=$OPTARG
+        ;;
+    d)        
+        sleeptime=$OPTARG
+        ;;               
+    h)        
+        echo $usage
+        exit 0     
+        ;;    
+    \?)       
+        echo $usage
+        exit 1     
+        ;;    
+    esac      
+done        
+
+if [ -d "/sys/devices/system/bpu/profiler_enable" ];then
+echo 250 > /sys/devices/system/bpu/profiler_frequency
+echo 1   > /sys/devices/system/bpu/profiler_enable
+fi
+while [ 1 -gt 0 ]
+do
+    if [ $count -gt 0 ] 2>/dev/null;then
+        echo "=====================$index====================="
+        index=$(($index+1))
+        count=$(($count-1))
+    else
+        break
+    fi
+
+    echo "temperature-->"
+    for temp in `find /sys/class/hwmon/* -name hwmon[0-9]*`
+    do
+        name=`cat $temp/name`
+        value=`cat $temp/temp1_input`
+        value=`awk 'BEGIN {print "'${value}'"/1000.0}'`
+        case $name in
+        x2_temp|pvt_ts)
+            name="CPU"
+            ;;
+        tmp75c)
+            name="BOARD"
+            ;;
+        *)
+            continue
+            ;;
+        esac
+        printf "\t%-8s : %-3.1f (C)\n" $name $value
+    done
+
+    echo "cpu frequency-->"
+    echo -e "\t      min\tcur\tmax"
+    for temp in `find /sys/devices/system/cpu/cpu* -name cpu[0-9]*`
+    do
+        min=`cat $temp/cpufreq/cpuinfo_min_freq`
+        cur=`cat $temp/cpufreq/cpuinfo_cur_freq`
+        max=`cat $temp/cpufreq/cpuinfo_max_freq`
+        echo -e "\t${temp##*/}: $min\t$cur\t$max"
+    done
+
+    echo "bpu status information---->"
+    echo -e "\t     min\tcur         \tmax         \tratio"
+    for temp in `find /sys/devices/system/bpu/bpu* -name bpu[0-9]*`
+    do
+		if [ -d "$temp/bpufreq" ];then
+			min=`cat $temp/bpufreq/min_freq`
+			cur=`cat $temp/bpufreq/cur_freq`
+			max=`cat $temp/bpufreq/max_freq`
+		else
+			min=`cat $temp/devfreq/devfreq*/min_freq`
+			cur=`cat $temp/devfreq/devfreq*/cur_freq`
+			max=`cat $temp/devfreq/devfreq*/max_freq`
+		fi
+		ratio=`cat $temp/ratio`
+        echo -e "\t${temp##*/}: $min\t$cur\t$max\t$ratio"
+    done
+
+    
+    if [ $count -gt 0 ];then
+        sleep $sleeptime
+    fi
+done

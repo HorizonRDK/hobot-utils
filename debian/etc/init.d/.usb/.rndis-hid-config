@@ -1,0 +1,27 @@
+#!/bin/sh
+
+###########################
+# General config
+#   these are the default settings
+#   the setting are only used, if not defined in the payload itself
+###########################
+
+# USB Gadget Setup
+# ---------------------------
+# Make sure to change USB_PID if you enable different USB functionality in order
+# to force Windows to enumerate the device again
+
+# default gadget information
+USB_VID=0x0525        # Vendor ID
+USB_PID=0xa4a2        # Product ID
+
+# options
+#RNDIS
+USE_RNDIS=true
+
+# HID
+USE_HID=true
+HID_REPORT_DESC=/etc/init.d/.usb/hid_report_desc.bin
+
+# multi function option
+IS_MULTI_FUNC=true

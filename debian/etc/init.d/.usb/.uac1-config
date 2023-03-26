@@ -1,0 +1,22 @@
+#!/bin/sh
+
+###########################
+# General config
+#   these are the default settings
+#   the setting are only used, if not defined in the payload itself
+###########################
+
+# USB Gadget Setup
+# ---------------------------
+# Make sure to change USB_PID if you enable different USB functionality in order
+# to force Windows to enumerate the device again
+
+# default gadget information
+#USB_VID=0x20b1        # XMOS VID (temporarily re-used)
+#USB_PID=0x0002        # XMOS UAC Gadget
+USB_VID=0x1d6b        # Linux Foundation
+USB_PID=0x0101        # Linux-USB Audio Gadget */
+
+# options
+# UAC1 (usb audio class version 1)
+USE_UAC1=true

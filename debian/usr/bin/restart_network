@@ -1,0 +1,12 @@
+#!/bin/bash -e
+
+echo "Restart NetworkManager..."
+systemctl restart NetworkManager
+sleep 0.5
+echo "Restart nmcli networking..."
+nmcli networking off
+sleep 0.2
+nmcli networking on
+sleep 0.3
+echo "Restart Network done"
+
