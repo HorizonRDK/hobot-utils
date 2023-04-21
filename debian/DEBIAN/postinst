@@ -1,4 +1,9 @@
 #!/bin/bash
 
 echo "Start to install hobot-utils"
+
+update-rc.d hobot-adbd defaults
+
+systemctl --no-reload enable hobot-adbd.service
+
 exit 0

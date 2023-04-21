@@ -2,5 +2,9 @@
 
 echo "Start to uninstall hobot-utils"
 
+update-rc.d hobot-adbd remove
+
+systemctl disable hobot-adbd.service
+
 exit 0
 
