@@ -9,6 +9,8 @@ endif
 
 .PHONY: all all_32 clean
 
+CFLAGS :=-Wall -fPIC -shared -O2 --sysroot=
+
 SRCS = $(wildcard *.c)
 
 OBJECT := ${BUILD_OUTPUT_PATH}/hrut_bpu
@@ -20,7 +22,7 @@ all all_32: $(OBJECT)
 
 $(OBJECT): $(SRCS)
 	@mkdir -p $(abspath $(dir $@))
-	${CC} ${CFLAGS} $^ ${INCS} ${LDFLAGS} $(LIBS) -o $@
+	${CC} ${CFLAGS} -o $@ $^ ${INCS} $(LIBS)
 
 install:$(OBJECT)
 	@install -d ${BUILD_OUTPUT_PATH}/../_install

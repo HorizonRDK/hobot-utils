@@ -19,18 +19,16 @@ LIBS = -lpthread
 all all_32: $(OBJS)
 
 ${BUILD_OUTPUT_PATH}/veeprom.o: ../veeprom.c
-	@echo CC $@
 	@mkdir -p $(abspath $(dir $@))
-	@${CC} ${CFLAGS} -c $< ${INCS} ${LDFLAGS} $(LIBS) -o $@
+	${CC} ${CFLAGS} -c $< ${INCS} ${LDFLAGS} -o $@
 
 ${BUILD_OUTPUT_PATH}/%.o: ./%.c
 	@mkdir -p $(abspath $(dir $@))
-	@${CC} ${CFLAGS} -c $< ${INCS} ${LDFLAGS} $(LIBS) -o $@
+	${CC} ${CFLAGS} -c $< ${INCS} ${LDFLAGS} -o $@
 
 ${BUILD_OUTPUT_PATH}/%: ${BUILD_OUTPUT_PATH}/%.o ${BUILD_OUTPUT_PATH}/veeprom.o
-	@echo CC $@
 	@mkdir -p $(abspath $(dir $@))
-	@${CC} ${CFLAGS} $^ ${INCS} ${LDFLAGS} $(LIBS) -o $@
+	${CC} ${CFLAGS} -o $@ $^ ${INCS} ${LDFLAGS}  $(LIBS)
 
 clean:
 	rm -rf $(OBJS) ${BUILD_OUTPUT_PATH}/*.o
