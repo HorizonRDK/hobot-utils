@@ -19,8 +19,8 @@ OBJDUMP = ${CROSS_COMPILE}objdump
 READELF = ${CROSS_COMPILE}readelf
 NM = ${CROSS_COMPILE}nm
 
-CFLAGS = -Wall -fPIC -shared
-CXXFLAGS = -Wall 
+CFLAGS = -Wall -fPIC
+CXXFLAGS = -Wall
 
 ifeq (${TARGET_MODE},debug)
         CFLAGS += -g -O0
@@ -33,6 +33,5 @@ endif
 
 LDFLAGS = -L${SYSROOT_DIR}/lib
 LDFLAGS += -L${SYSROOT_DIR}/usr/lib
-LDFLAGS += -L${SYSROOT_DIR}/usr/lib/aarch64-linux-gnu
 
 CFLAGS += --sysroot=${SYSROOT_DIR}
