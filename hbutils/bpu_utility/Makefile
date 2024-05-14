@@ -9,7 +9,7 @@ endif
 
 .PHONY: all all_32 clean
 
-CFLAGS :=-Wall -fPIC -shared -O2 --sysroot=
+CFLAGS :=-Wall -fPIC -shared -O2
 
 SRCS = $(wildcard *.c)
 

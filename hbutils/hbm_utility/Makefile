@@ -14,6 +14,7 @@ SRCS = $(wildcard *.c)
 OBJECT := ${BUILD_OUTPUT_PATH}/hrut_hbm
 
 LIBS= -lcjson
+INCS += -I/opt/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/usr/include
 INCS += -I${SYSROOT_DIR}/usr/include/cjson
 
 all all_32: $(OBJECT)

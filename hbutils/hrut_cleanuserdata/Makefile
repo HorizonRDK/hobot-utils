@@ -15,6 +15,7 @@ OBJECTS := ${BUILD_OUTPUT_PATH}/hrut_cleanuserdata
 
 LIBS = -lcjson
 INCS += -I${SYSROOT_DIR}/usr/include/cjson
+INCS += -I/opt/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/usr/include
 
 all all_32: $(OBJECTS)
 
