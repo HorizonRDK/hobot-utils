@@ -13,8 +13,8 @@
 
 #define MMCBLK		"/dev/mmcblk0"
 
-int fd;
-int bootmode = 0;
+static int fd;
+static int bootmode = 0;
 
 static void help(void)
 {

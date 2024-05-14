@@ -14,6 +14,7 @@ OBJS_ORI = $(SRCS_C:.c=)
 OBJS = $(patsubst ./%,${BUILD_OUTPUT_PATH}/%,$(OBJS_ORI))
 
 INCS += -I../
+INCS += -I/opt/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/usr/include
 LIBS = -lpthread
 
 all all_32: $(OBJS)
